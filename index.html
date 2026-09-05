@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f97316" />
+    <title>小店排队取号</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div><p class="eyebrow">今日营业</p><h1>小店排队取号</h1></div>
+        <button id="logout-button" class="text-button" hidden>退出登录</button>
+      </header>
+
+      <section id="login-panel" class="card login-card">
+        <h2>商家登录</h2>
+        <p class="muted">仅限家人使用。登录后可查看和操作排队资料。</p>
+        <form id="login-form">
+          <label>邮箱<input id="email" type="email" autocomplete="username" required /></label>
+          <label>密码<input id="password" type="password" autocomplete="current-password" required /></label>
+          <button class="primary-button" type="submit">登录</button>
+        </form>
+        <p id="login-error" class="error-message" role="alert"></p>
+      </section>
+
+      <section id="app-panel" hidden>
+        <nav class="mode-switch" aria-label="选择功能">
+          <button class="mode-button active" data-mode="customer">登记新顾客</button>
+          <button class="mode-button" data-mode="staff">管理排队</button>
+        </nav>
+
+        <section id="customer-panel" class="panel">
+          <div class="card">
+            <h2>登记新顾客</h2>
+            <p class="muted">填写后会自动分到对应桌型队列。</p>
+            <form id="entry-form">
+              <div class="form-grid">
+                <label>姓名<input id="customer-name" maxlength="80" required /></label>
+                <label>手机号<input id="phone" type="tel" maxlength="30" required /></label>
+                <label>用餐人数<input id="party-size" type="number" min="1" max="99" required /></label>
+              </div>
+              <button class="primary-button" type="submit">取号并加入队列</button>
+            </form>
+          </div>
+          <div id="new-ticket" class="card ticket-result" hidden>
+            <span>排队号码</span><strong id="new-ticket-number">--</strong>
+            <small id="new-ticket-category"></small>
+          </div>
+        </section>
+
+        <section id="staff-panel" class="panel" hidden>
+          <div class="staff-toolbar">
+            <button id="refresh-button" class="secondary-button">刷新</button>
+            <button id="export-button" class="secondary-button">导出今日 CSV</button>
+            <button id="reset-day" class="danger-button">开始新一天</button>
+          </div>
+          <div id="current-call" class="card current-call" hidden>
+            <span>刚刚叫到</span><strong id="current-call-number">--</strong>
+            <b id="current-call-name"></b>
+            <small id="current-call-detail"></small>
+          </div>
+          <div id="queue-tabs" class="queue-tabs"></div>
+          <div id="queue-list" class="queue-list"></div>
+          <p id="empty-queue" class="empty-state">当前分类没有等待中的顾客</p>
+          <div class="card called-card">
+            <h2>已叫号，等待确认入座</h2>
+            <div id="called-list" class="called-list"></div>
+            <p id="empty-called" class="empty-state">还没有等待确认的顾客</p>
+          </div>
+        </section>
+      </section>
+      <footer class="app-footer">数据保存在 Supabase · 仅登录后的家人可见</footer>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
