@@ -81,8 +81,17 @@ function renderQueues() {
       </div>
     </article>`).join("");
   $("#empty-queue").hidden = waiting.length > 0;
+  $("#called-list").innerHTML = called.slice(0, 20).map((entry) => `
+    <div class="called-row">
+      <span class="called-customer"><b>${formatNumber(entry.queue_number)}</b> ${escapeHtml(entry.customer_name)}<em>等待处理</em></span>
+      <span class="called-actions">
+        <button class="seated-button" data-action="seated" data-id="${entry.id}">确认入座</button>
+        <button class="skipped-button" data-action="skip-called" data-id="${entry.id}">过号</button>
+      </span>
+    </div>`).join("");
+  $("#empty-called").hidden = called.length > 0;
   const history = entries
-    .filter((entry) => ["called", "seated", "skipped"].includes(entry.status))
+    .filter((entry) => entry.status === "seated" || entry.status === "skipped")
     .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
   $("#history-list").innerHTML = history.slice(0, 50).map((entry) => `
     <button class="history-row" data-detail-id="${entry.id}">
@@ -154,15 +163,16 @@ async function updateEntry(action, id) {
   const entry = entries.find((item) => item.id === id);
   if (!entry) return;
   if (action === "seated" && !confirm(`确认 ${formatNumber(entry.queue_number)} 号顾客已入座吗？`)) return;
+  if (action === "skip-called" && !confirm(`确认 ${formatNumber(entry.queue_number)} 号顾客过号了吗？`)) return;
   let patch;
-  if (action === "skip") patch = { status: "skipped" };
+  if (action === "skip" || action === "skip-called") patch = { status: "skipped" };
   if (action === "call") patch = { status: "called", called_at: new Date().toISOString() };
   if (action === "seated") patch = { status: "seated" };
   if (action === "top") patch = { queue_position: Math.floor(Date.now() / 1000) - 1000000000 };
   const { error } = await client.from("queue_entries").update(patch).eq("id", id);
   if (error) return showToast(`操作失败：${error.message}`);
   await loadEntries();
-  showToast(action === "skip" ? "已标记为弃号" : action === "call" ? `请 ${formatNumber(entry.queue_number)} 号顾客到店内` : action === "seated" ? "已标记入座" : "已置顶");
+  showToast(action === "skip" || action === "skip-called" ? "已标记为过号" : action === "call" ? `请 ${formatNumber(entry.queue_number)} 号顾客到店内` : action === "seated" ? "已标记入座" : "已置顶");
 }
 
 async function resetDay() {

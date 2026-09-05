@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f97316" />
     <title>小店排队取号</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2026090603" />
   </head>
   <body>
     <main class="app-shell">
@@ -64,6 +64,12 @@
           <div id="queue-tabs" class="queue-tabs"></div>
           <div id="queue-list" class="queue-list"></div>
           <p id="empty-queue" class="empty-state">当前分类没有等待中的顾客</p>
+          <div class="card called-card">
+            <h2>已叫号，等待处理</h2>
+            <p class="muted">顾客到店后确认入座；未到店则标记为过号。</p>
+            <div id="called-list" class="called-list"></div>
+            <p id="empty-called" class="empty-state">暂时没有待处理的叫号</p>
+          </div>
           <div class="card history-card">
             <h2>今日历史记录</h2>
             <p class="muted">叫号、弃号、已入座都会保留在这里。点击记录查看详情。</p>
@@ -82,7 +88,7 @@
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
-    <script src="app.js"></script>
+    <script src="config.js?v=2026090603"></script>
+    <script src="app.js?v=2026090603"></script>
   </body>
 </html>
