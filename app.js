@@ -63,7 +63,6 @@ function renderQueues() {
   renderTabs();
   const waiting = entries.filter((entry) => entry.category === selectedCategory && entry.status === "waiting");
   const called = entries.filter((entry) => entry.status === "called").sort((a, b) => new Date(b.called_at) - new Date(a.called_at));
-  const seated = entries.filter((entry) => entry.status === "seated").sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
   const latest = called[0];
   $("#current-call").hidden = !latest;
   if (latest) {
@@ -82,18 +81,15 @@ function renderQueues() {
       </div>
     </article>`).join("");
   $("#empty-queue").hidden = waiting.length > 0;
-  $("#called-list").innerHTML = called.slice(0, 8).map((entry) => `
-    <div class="called-row">
-      <span class="called-customer"><b>${formatNumber(entry.queue_number)}</b> ${escapeHtml(entry.customer_name)}<em>等待入座</em></span>
-      <button class="seated-button" data-action="seated" data-id="${entry.id}">确认已入座</button>
-    </div>`).join("");
-  $("#empty-called").hidden = called.length > 0;
-  $("#seated-list").innerHTML = seated.slice(0, 20).map((entry) => `
+  const history = entries
+    .filter((entry) => ["called", "seated", "skipped"].includes(entry.status))
+    .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  $("#history-list").innerHTML = history.slice(0, 50).map((entry) => `
     <button class="history-row" data-detail-id="${entry.id}">
       <span><b>${formatNumber(entry.queue_number)}</b> ${escapeHtml(entry.customer_name)}</span>
-      <em>已入座 · 查看详情</em>
+      <em class="status-${entry.status}">${statusLabel(entry.status)} · 查看详情</em>
     </button>`).join("");
-  $("#empty-seated").hidden = seated.length > 0;
+  $("#empty-history").hidden = history.length > 0;
   document.querySelectorAll("[data-action]").forEach((button) => {
     button.addEventListener("click", () => updateEntry(button.dataset.action, button.dataset.id));
   });
@@ -106,6 +102,10 @@ function escapeHtml(value) {
   return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character]);
 }
 
+function statusLabel(status) {
+  return { called: "已叫号", seated: "已入座", skipped: "弃号" }[status] || status;
+}
+
 function showDetails(id) {
   const entry = entries.find((item) => item.id === id);
   if (!entry) return;
@@ -115,7 +115,7 @@ function showDetails(id) {
     ["手机号", escapeHtml(entry.phone)],
     ["用餐人数", `${entry.party_size} 人`],
     ["桌型", categories[entry.category].label],
-    ["状态", entry.status === "seated" ? "已入座" : entry.status],
+    ["状态", statusLabel(entry.status)],
     ["取号时间", formatDate(entry.created_at)],
     ["叫号时间", formatDate(entry.called_at)],
     ["更新时间", formatDate(entry.updated_at)],

@@ -51,6 +51,8 @@ form { display: grid; gap: 14px; }
 .history-row { display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; border-radius: 9px; padding: 11px; color: #374151; background: #fafaf9; text-align: left; }
 .history-row:hover { background: #f5f5f4; }
 .history-row em { color: #166534; font-size: .78rem; font-style: normal; font-weight: 700; }
+.history-row .status-called { color: #9a3412; }
+.history-row .status-skipped { color: #b91c1c; }
 .queue-entry { display: grid; grid-template-columns: 55px 1fr auto; gap: 10px; align-items: center; padding: 13px; border: 1px solid #fed7aa; border-radius: 14px; background: #fff; }
 .entry-number { color: #c2410c; font-size: 1.8rem; font-weight: 800; text-align: center; }
 .entry-info { display: grid; gap: 3px; min-width: 0; }
