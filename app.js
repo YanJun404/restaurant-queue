@@ -63,6 +63,7 @@ function renderQueues() {
   renderTabs();
   const waiting = entries.filter((entry) => entry.category === selectedCategory && entry.status === "waiting");
   const called = entries.filter((entry) => entry.status === "called").sort((a, b) => new Date(b.called_at) - new Date(a.called_at));
+  const seated = entries.filter((entry) => entry.status === "seated").sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
   const latest = called[0];
   $("#current-call").hidden = !latest;
   if (latest) {
@@ -87,13 +88,43 @@ function renderQueues() {
       <button class="seated-button" data-action="seated" data-id="${entry.id}">确认已入座</button>
     </div>`).join("");
   $("#empty-called").hidden = called.length > 0;
+  $("#seated-list").innerHTML = seated.slice(0, 20).map((entry) => `
+    <button class="history-row" data-detail-id="${entry.id}">
+      <span><b>${formatNumber(entry.queue_number)}</b> ${escapeHtml(entry.customer_name)}</span>
+      <em>已入座 · 查看详情</em>
+    </button>`).join("");
+  $("#empty-seated").hidden = seated.length > 0;
   document.querySelectorAll("[data-action]").forEach((button) => {
     button.addEventListener("click", () => updateEntry(button.dataset.action, button.dataset.id));
+  });
+  document.querySelectorAll("[data-detail-id]").forEach((button) => {
+    button.addEventListener("click", () => showDetails(button.dataset.detailId));
   });
 }
 
 function escapeHtml(value) {
   return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[character]);
+}
+
+function showDetails(id) {
+  const entry = entries.find((item) => item.id === id);
+  if (!entry) return;
+  $("#detail-content").innerHTML = [
+    ["排队号码", formatNumber(entry.queue_number)],
+    ["姓名", escapeHtml(entry.customer_name)],
+    ["手机号", escapeHtml(entry.phone)],
+    ["用餐人数", `${entry.party_size} 人`],
+    ["桌型", categories[entry.category].label],
+    ["状态", entry.status === "seated" ? "已入座" : entry.status],
+    ["取号时间", formatDate(entry.created_at)],
+    ["叫号时间", formatDate(entry.called_at)],
+    ["更新时间", formatDate(entry.updated_at)],
+  ].map(([label, value]) => `<div><span>${label}</span><strong>${value || "-"}</strong></div>`).join("");
+  $("#detail-dialog").hidden = false;
+}
+
+function formatDate(value) {
+  return value ? new Date(value).toLocaleString("zh-CN", { hour12: false }) : "";
 }
 
 async function addEntry(event) {
@@ -171,6 +202,10 @@ $("#entry-form").addEventListener("submit", addEntry);
 $("#refresh-button").addEventListener("click", () => loadEntries().catch((error) => showToast(`刷新失败：${error.message}`)));
 $("#export-button").addEventListener("click", exportCsv);
 $("#reset-day").addEventListener("click", resetDay);
+$("#close-detail").addEventListener("click", () => { $("#detail-dialog").hidden = true; });
+$("#detail-dialog").addEventListener("click", (event) => {
+  if (event.target === $("#detail-dialog")) $("#detail-dialog").hidden = true;
+});
 document.querySelectorAll(".mode-button").forEach((button) => button.addEventListener("click", () => {
   document.querySelectorAll(".mode-button").forEach((item) => item.classList.remove("active"));
   button.classList.add("active");
